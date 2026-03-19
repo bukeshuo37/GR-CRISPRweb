@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🔍 Database Search</h2>
+
+<div class="search-bar">
+    <div style="flex: 1; min-width: 200px;">
+        <input id="omim" placeholder="Enter OMIM ID" style="width: 100%;">
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+        <input id="mutation" placeholder="Enter Mutation Information" style="width: 100%;">
+    </div>
+    <div class="mode-selector">
+        <label><input type="radio" name="mode" value="cas9" checked>🧬 CRISPR/Cas9</label>
+        <label><input type="radio" name="mode" value="be">🧬 BEs</label>
+    </div>
+    <select id="editor" style="flex: 1; min-width: 150px;"></select>
+    <select id="sort_by" style="flex: 1; min-width: 150px;"></select>
+    <button onclick="search()" style="flex-shrink: 0;">🔍 Search</button>
+</div>
+
+<div id="result" style="min-height: 200px;">
+    <p style="color:#888;">Please enter disease information to get prediction results</p>
+    <p style="color:#888;">(Please wait a few minutes when loading data for the first time)</p>
+</div>
+{% endblock %}
