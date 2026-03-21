@@ -11,6 +11,10 @@ function updateEditors(){
         option.value=e; option.text=e;
         editorSelect.appendChild(option);
     });
+    // Set default selected option
+    if(editorSelect.options.length > 0) {
+        editorSelect.selectedIndex = 0;
+    }
     updateSortOptions();
 }
 
@@ -77,12 +81,30 @@ document.addEventListener("DOMContentLoaded",function(){
         sortEl.value = sortParam;
     }
 
-    if(autoSearch || omimParam || mutationParam) {
-        search();
-    } else {
-
-        preloadData();
-    }
+    // Initialize editors first
+    updateEditors();
+    
+    // Check if input fields have default values after a short delay to ensure everything is rendered
+    setTimeout(() => {
+        const omimValue = omimEl ? omimEl.value : "";
+        const mutationValue = mutationEl ? mutationEl.value : "";
+        const editorValue = document.getElementById("editor").value;
+        
+        console.log('Page loaded - omimValue:', omimValue);
+        console.log('Page loaded - mutationValue:', mutationValue);
+        console.log('Page loaded - editorValue:', editorValue);
+        console.log('Page loaded - autoSearch:', autoSearch);
+        console.log('Page loaded - omimParam:', omimParam);
+        console.log('Page loaded - mutationParam:', mutationParam);
+        
+        if(autoSearch || omimParam || mutationParam || omimValue || mutationValue) {
+            console.log('Triggering search...');
+            search();
+        } else {
+            console.log('Preloading data...');
+            preloadData();
+        }
+    }, 300);
 });
 
 // Pagination variables
@@ -341,8 +363,11 @@ function search(){
     let omim = document.getElementById("omim").value;
     let mutation = document.getElementById("mutation").value;
     let mode = document.querySelector('input[name="mode"]:checked').value;
-    let editor = document.getElementById("editor").value;
+    let editorSelect = document.getElementById("editor");
+    let editor = editorSelect.value || (editorSelect.options.length > 0 ? editorSelect.options[0].value : "WT-SpCas9");
     let sortBy = document.getElementById("sort_by") ? document.getElementById("sort_by").value : "";
+    
+    console.log('Search triggered with:', { omim, mutation, mode, editor });
 
     fetch("/api/search",{
         method:"POST",
@@ -358,7 +383,7 @@ function search(){
         beTargetFilter = null;
 
         if(data.length==0){
-            document.getElementById("result").innerHTML="<p style='color:#888;'>Please enter disease information to search</p>";
+            document.getElementById("result").innerHTML="<p style='color:#888;'>No data found for the current search criteria</p><p style='color:#888;'>(Please wait a few minutes when loading data for the first time)</p>";
         } else {
             renderPage(1);
         }
