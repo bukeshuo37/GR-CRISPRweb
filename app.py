@@ -203,7 +203,7 @@ def search():
                 df = df[df["OMIM_ID"].astype(str)==omim]
         if mutation:
             # case-insensitive substring match on Name
-            df = df[df["Name"].str.contains(mutation, case=False, na=False)]
+            df = df[df["Name"].str.contains(mutation, case=False, na=False, regex=False)]
         result = cas9_view(df, editor)
     else:
         df = BE
@@ -216,7 +216,7 @@ def search():
                 df = df[df["OMIM_ID"].astype(str)==omim]
         if mutation:
             # case-insensitive substring match on Name
-            df = df[df["Name"].str.contains(mutation, case=False, na=False)]
+            df = df[df["Name"].str.contains(mutation, case=False, na=False, regex=False)]
         result = be_view(df, editor)
 
     # sorting/grouping
@@ -275,7 +275,7 @@ def search_original():
                 df = df[df["OMIM_ID"].astype(str)==omim]
         if mutation:
             # case-insensitive substring match on Name
-            df = df[df["Name"].str.contains(mutation, case=False, na=False)]
+            df = df[df["Name"].str.contains(mutation, case=False, na=False, regex=False)]
         if name:
             # exact match on Name
             df = df[df["Name"] == name]
