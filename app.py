@@ -44,11 +44,11 @@ def dataframe_to_ordered_records(df):
 
 
 data_files = {
-    'GR-CRISPR_cas9': 'GR-CRISPR_cas9.csv',
+    'Prism-CRISPR_cas9': 'Prism-CRISPR_cas9.csv',
     'DeepMEns': 'DeepMEns.csv',
     'TransCrispr': 'TransCrispr.csv',
-    'GR-CRISPR_abe': 'GR-CRISPR_abe.csv',
-    'GR-CRISPR_cbe': 'GR-CRISPR_cbe.csv',
+    'Prism-CRISPR_abe': 'Prism-CRISPR_abe.csv',
+    'Prism-CRISPR_cbe': 'Prism-CRISPR_cbe.csv',
     'DeepBE_abe': 'DeepBE_abe.csv',
     'DeepBE_cbe': 'DeepBE_cbe.csv',
     'BEDeepon_abe': 'BEDeepon_abe.csv',
@@ -98,11 +98,11 @@ def load_all_data():
     if data_loaded:
         return
     
-    GR_CAS9 = load_csv('GR-CRISPR_cas9.csv', data_files['GR-CRISPR_cas9'])
+    GR_CAS9 = load_csv('Prism-CRISPR_cas9.csv', data_files['Prism-CRISPR_cas9'])
     DEEPMENS = load_csv('DeepMEns.csv', data_files['DeepMEns'])
     TRANS = load_csv('TransCrispr.csv', data_files['TransCrispr'])
-    GR_ABE = load_csv('GR-CRISPR_abe.csv', data_files['GR-CRISPR_abe'])
-    GR_CBE = load_csv('GR-CRISPR_cbe.csv', data_files['GR-CRISPR_cbe'])
+    GR_ABE = load_csv('Prism-CRISPR_abe.csv', data_files['Prism-CRISPR_abe'])
+    GR_CBE = load_csv('Prism-CRISPR_cbe.csv', data_files['Prism-CRISPR_cbe'])
     DEEPBE_ABE = load_csv('DeepBE_abe.csv', data_files['DeepBE_abe'])
     DEEPBE_CBE = load_csv('DeepBE_cbe.csv', data_files['DeepBE_cbe'])
     BEDEE_ABE = load_csv('BEDeepon_abe.csv', data_files['BEDeepon_abe'])
@@ -221,18 +221,19 @@ def search():
 
     # sorting/grouping
     if mode == "be":
-        group_cols = [col for col in ["Name", "sgRNA", "Outcome"] if col in result.columns]
         if sort_by and sort_by in result.columns:
-            result = result.sort_values(by=group_cols + [sort_by], ascending=[True] * len(group_cols) + [False])
-        elif "GR-CRISPRScore" in result.columns:
-            result = result.sort_values(by=group_cols + ["GR-CRISPRScore"], ascending=[True] * len(group_cols) + [False])
+            # Sort by selected column descending only
+            result = result.sort_values(by=sort_by, ascending=False)
+        elif "Prism-CRISPRScore" in result.columns:
+            # Default sort by Prism-CRISPRScore descending
+            result = result.sort_values(by="Prism-CRISPRScore", ascending=False)
     else:
-        # default sort: group by Name then GR-CRISPRScore desc
+        # default sort: group by Name then Prism-CRISPRScore desc
         # if custom sort selected: sort by that column descending only
         if sort_by and sort_by in result.columns:
             result = result.sort_values(by=sort_by, ascending=False)
-        elif "Name" in result.columns and "GR-CRISPRScore" in result.columns:
-            result = result.sort_values(by=["Name","GR-CRISPRScore"], ascending=[True,False])
+        elif "Name" in result.columns and "Prism-CRISPRScore" in result.columns:
+            result = result.sort_values(by=["Name","Prism-CRISPRScore"], ascending=[True,False])
 
     # ecords = dataframe_to_ordered_records(result.head(200))
     records = dataframe_to_ordered_records(result)
@@ -253,6 +254,7 @@ def search_original():
         editor = data.get("editor")
         name = data.get("name")
         sgRNA = data.get("sgRNA")
+        sort_by = data.get("sort_by")  # 添加sort_by参数
         
         if mode != "be" or editor is None:
             return jsonify([])
@@ -291,8 +293,12 @@ def search_original():
         result = be_view_original(df, editor)
 
         # sorting
-        if "GR-CRISPRScore" in result.columns:
-            result = result.sort_values(by=["Name", "sgRNA", "Outcome"], ascending=[True, True, True])
+        if sort_by and sort_by in result.columns:
+            # Sort by selected column descending only
+            result = result.sort_values(by=sort_by, ascending=False)
+        elif "Prism-CRISPRScore" in result.columns:
+            # Default sort by Prism-CRISPRScore descending
+            result = result.sort_values(by="Prism-CRISPRScore", ascending=False)
 
         # records = dataframe_to_ordered_records(result.head(200))
         records = dataframe_to_ordered_records(result)
@@ -305,9 +311,9 @@ def search_original():
 
 def cas9_view(df, editor):
     mapping = {
-        "WT-SpCas9": ("GR-CRISPR_WT","DeepMEns_WT","TransCrispr_WT"),
-        "eSpCas9(1.1)": ("GR-CRISPR_ESP","DeepMEns_ESP","TransCrispr_ESP"),
-        "SpCas9-HF1": ("GR-CRISPR_HF","DeepMEns_HF","TransCrispr_HF")
+        "WT-SpCas9": ("Prism-CRISPR_WT","DeepMEns_WT","TransCrispr_WT"),
+        "eSpCas9(1.1)": ("Prism-CRISPR_ESP","DeepMEns_ESP","TransCrispr_ESP"),
+        "SpCas9-HF1": ("Prism-CRISPR_HF","DeepMEns_HF","TransCrispr_HF")
     }
     gr, deep, trans = mapping[editor]
     result = pd.DataFrame({
@@ -315,21 +321,21 @@ def cas9_view(df, editor):
         "OMIM_ID": pd.to_numeric(df["OMIM_ID"], errors='coerce').astype('Int64'),
         "sgRNA": df["sgRNA_base"],
         "PAM": df["pam"],
-        "GR-CRISPRScore": df[gr],
+        "Prism-CRISPRScore": df[gr],
         "DeepMEnsScore": df[deep],
         "TransCrisprScore": df[trans],
         "Editor": editor
     })
-    return result[["Name", "OMIM_ID", "sgRNA", "PAM", "GR-CRISPRScore", "DeepMEnsScore", "TransCrisprScore", "Editor"]]
+    return result[["Name", "OMIM_ID", "sgRNA", "PAM", "Prism-CRISPRScore", "DeepMEnsScore", "TransCrisprScore", "Editor"]]
 
 def be_view(df, editor):
     mapping = {
-        "ABE7.10": ("GR-CRISPR_ABE7","DeepBE_ABE7","BEDeepon_ABE7"),
-        "ABEmax": ("GR-CRISPR_ABEmax","DeepBE_ABEmax","BEDeepon_ABEmax"),
-        "ABE8e": ("GR-CRISPR_ABE8e","DeepBE_ABE8e","BEDeepon_ABE8e"),
-        "BE4": ("GR-CRISPR_BE4","DeepBE_BE4","BEDeepon_BE4"),
-        "CBE4max": ("GR-CRISPR_CBE4max","DeepBE_CBE4max","BEDeepon_CBE4max"),
-        "Target-AID": ("GR-CRISPR_AID","DeepBE_AID","BEDeepon_AID")
+        "ABE7.10": ("Prism-CRISPR_ABE7","DeepBE_ABE7","BEDeepon_ABE7"),
+        "ABEmax": ("Prism-CRISPR_ABEmax","DeepBE_ABEmax","BEDeepon_ABEmax"),
+        "ABE8e": ("Prism-CRISPR_ABE8e","DeepBE_ABE8e","BEDeepon_ABE8e"),
+        "BE4": ("Prism-CRISPR_BE4","DeepBE_BE4","BEDeepon_BE4"),
+        "CBE4max": ("Prism-CRISPR_CBE4max","DeepBE_CBE4max","BEDeepon_CBE4max"),
+        "Target-AID": ("Prism-CRISPR_AID","DeepBE_AID","BEDeepon_AID")
     }
     gr, deep, deepon = mapping[editor]
     
@@ -345,27 +351,27 @@ def be_view(df, editor):
         "sgRNA": df["target_base"],
         "PAM": df["pam"],
         "Outcome": df["outcome"].astype(str).str[:20],
-        "GR-CRISPRScore": 1 - df[gr],
+        "Prism-CRISPRScore": 1 - df[gr],
         "DeepBEScore": 1 - df[deep],
         "BEDeeponScore": 1 - df[deepon],
         "Editor": editor
     })
     
     # Drop rows with NaN scores
-    result = result.dropna(subset=["GR-CRISPRScore", "DeepBEScore", "BEDeeponScore"])
+    result = result.dropna(subset=["Prism-CRISPRScore", "DeepBEScore", "BEDeeponScore"])
     
     result = result.drop_duplicates(subset=["Name", "sgRNA"], keep="first")
     
-    return result[["Name", "OMIM_ID", "sgRNA", "PAM", "Outcome", "GR-CRISPRScore", "DeepBEScore", "BEDeeponScore", "Editor"]]
+    return result[["Name", "OMIM_ID", "sgRNA", "PAM", "Outcome", "Prism-CRISPRScore", "DeepBEScore", "BEDeeponScore", "Editor"]]
 
 def be_view_original(df, editor):
     mapping = {
-        "ABE7.10": ("GR-CRISPR_ABE7","DeepBE_ABE7","BEDeepon_ABE7"),
-        "ABEmax": ("GR-CRISPR_ABEmax","DeepBE_ABEmax","BEDeepon_ABEmax"),
-        "ABE8e": ("GR-CRISPR_ABE8e","DeepBE_ABE8e","BEDeepon_ABE8e"),
-        "BE4": ("GR-CRISPR_BE4","DeepBE_BE4","BEDeepon_BE4"),
-        "CBE4max": ("GR-CRISPR_CBE4max","DeepBE_CBE4max","BEDeepon_CBE4max"),
-        "Target-AID": ("GR-CRISPR_AID","DeepBE_AID","BEDeepon_AID")
+        "ABE7.10": ("Prism-CRISPR_ABE7","DeepBE_ABE7","BEDeepon_ABE7"),
+        "ABEmax": ("Prism-CRISPR_ABEmax","DeepBE_ABEmax","BEDeepon_ABEmax"),
+        "ABE8e": ("Prism-CRISPR_ABE8e","DeepBE_ABE8e","BEDeepon_ABE8e"),
+        "BE4": ("Prism-CRISPR_BE4","DeepBE_BE4","BEDeepon_BE4"),
+        "CBE4max": ("Prism-CRISPR_CBE4max","DeepBE_CBE4max","BEDeepon_CBE4max"),
+        "Target-AID": ("Prism-CRISPR_AID","DeepBE_AID","BEDeepon_AID")
     }
     gr, deep, deepon = mapping[editor]
     
@@ -375,16 +381,16 @@ def be_view_original(df, editor):
         "sgRNA": df["target_base"],
         "PAM": df["pam"],
         "Outcome": df["outcome"].astype(str).str[:20],
-        "GR-CRISPRScore": df[gr], 
+        "Prism-CRISPRScore": df[gr], 
         "DeepBEScore": df[deep],    
         "BEDeeponScore": df[deepon], 
         "Editor": editor
     })
     
     # Drop rows with NaN scores
-    result = result.dropna(subset=["GR-CRISPRScore", "DeepBEScore", "BEDeeponScore"])
+    result = result.dropna(subset=["Prism-CRISPRScore", "DeepBEScore", "BEDeeponScore"])
     
-    return result[["Name", "OMIM_ID", "sgRNA", "PAM", "Outcome", "GR-CRISPRScore", "DeepBEScore", "BEDeeponScore", "Editor"]]
+    return result[["Name", "OMIM_ID", "sgRNA", "PAM", "Outcome", "Prism-CRISPRScore", "DeepBEScore", "BEDeeponScore", "Editor"]]
 
 app = app
 

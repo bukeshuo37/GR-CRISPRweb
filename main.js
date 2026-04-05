@@ -12,6 +12,7 @@ function updateEditors(){
         editorSelect.appendChild(option);
     });
     // Set default selected option
+    // Set default selected option
     if(editorSelect.options.length > 0) {
         editorSelect.selectedIndex = 0;
     }
@@ -25,15 +26,17 @@ function updateSortOptions(){
     sortSelect.innerHTML = "";
     let opts = [];
     if(mode=="cas9"){
-        opts = ["","GR-CRISPRScore","DeepMEnsScore","TransCrisprScore"];
+        opts = ["Prism-CRISPRScore","DeepMEnsScore","TransCrisprScore"];
     } else {
-        opts = ["","GR-CRISPRScore","DeepBEScore","BEDeeponScore"];
+        opts = ["Prism-CRISPRScore","DeepBEScore","BEDeeponScore"];
     }
     opts.forEach(v=>{
         let o=document.createElement('option');
-        o.value=v; o.text=v||'Sort (Default: Name → GR-CRISPRScore)';
+        o.value=v; o.text=v;
         sortSelect.appendChild(o);
     });
+    // Set Prism-CRISPRScore as default
+    sortSelect.value = "Prism-CRISPRScore";
 }
 function preloadData() {
 
@@ -116,11 +119,9 @@ let searchMode = '';
 let beTargetFilter = null;
 
 function shouldMergeColumn(columnName) {
-    if(searchMode !== "be") {
-        return true;
-    }
-    const beMergeColumns = new Set(["Name", "sgRNA", "PAM"]);
-    return beMergeColumns.has(columnName);
+    
+    // 所有其他情况，所有列都应该可以合并
+    return true;
 }
 
 function normalizeMergeValue(value) {
@@ -166,12 +167,13 @@ function filterBeByTarget(nameEncoded, sgRNAEncoded) {
     let mutation = document.getElementById("mutation").value;
     let mode = document.querySelector('input[name="mode"]:checked').value;
     let editor = document.getElementById("editor").value;
+    let sortBy = document.getElementById("sort_by") ? document.getElementById("sort_by").value : "Prism-CRISPRScore";
     
 
     fetch("/api/search_original", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({omim_id: omim, mutation: mutation, mode: mode, editor: editor, name: targetName, sgRNA: targetSgRNA})
+        body: JSON.stringify({omim_id: omim, mutation: mutation, mode: mode, editor: editor, name: targetName, sgRNA: targetSgRNA, sort_by: sortBy})
     })
     .then(r => {
         if (!r.ok) {
@@ -300,7 +302,7 @@ function renderPage(pageNum) {
                         val = val.substring(0, 20);
                     }
 
-                    if(searchMode === "be") {
+                    if(searchMode === "be" && !beTargetFilter) {
                         const encodedName = encodeURIComponent(String(row.Name ?? "").trim());
                         const encodedSgRNA = encodeURIComponent(String(val ?? "").trim());
                         val = `<a href="#" onclick="filterBeByTarget('${encodedName}','${encodedSgRNA}');return false;" style="color: blue; text-decoration: underline;">${val}</a>`;

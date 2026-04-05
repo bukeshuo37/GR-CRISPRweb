@@ -4,17 +4,25 @@
 
 <div class="search-bar">
     <div style="flex: 1; min-width: 200px;">
-        <input id="omim" placeholder="Enter OMIM ID" value="612782" style="width: 100%;">
+        <div style="margin-bottom: 5px; font-size: 14px; color: #666; font-weight: bold;">OMIM ID</div>
+        <input id="omim" placeholder="Enter OMIM ID" value="618278" style="width: 100%; color: #999;">
     </div>
-    <div style="flex: 1; min-width: 200px;">
-        <input id="mutation" placeholder="Enter Mutation Information" value="NC_000012.12:g.121641056G>A" style="width: 100%;">
+    <div style="flex: 2; min-width: 400px;">
+        <div style="margin-bottom: 5px; font-size: 14px; color: #666; font-weight: bold;">Mutation Information</div>
+        <input id="mutation" placeholder="Enter Mutation Information" value="NM_198514.4(NHLRC2):c.1013C>T (p.Pro338Leu)" style="width: 100%; color: #999;">
     </div>
     <div class="mode-selector">
         <label><input type="radio" name="mode" value="cas9" checked>🧬 CRISPR/Cas9</label>
-        <label><input type="radio" name="mode" value="be">🧬 BEs</label>
+        <label><input type="radio" name="mode" value="be">🧬 Base Editors (BEs)</label>
     </div>
-    <select id="editor" style="flex: 1; min-width: 150px;"></select>
-    <select id="sort_by" style="flex: 1; min-width: 150px;"></select>
+    <div style="flex: 1; min-width: 150px;">
+        <div style="margin-bottom: 5px; font-size: 14px; color: #666; font-weight: bold;">Editor</div>
+        <select id="editor" style="width: 100%;"></select>
+    </div>
+    <div style="flex: 1; min-width: 300px; width: 100%;">
+        <div style="margin-bottom: 5px; font-size: 14px; color: #666; font-weight: bold;">Sort</div>
+        <select id="sort_by" style="width: 100%; min-width: 300px;"></select>
+    </div>
     <button onclick="search()" style="flex-shrink: 0;">🔍 Search</button>
 </div>
 

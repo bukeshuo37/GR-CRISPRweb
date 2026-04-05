@@ -62,8 +62,21 @@ h3 {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    align-items: center;
+    align-items: flex-end;
     margin-bottom: 25px;
+}
+
+.search-bar > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-bar select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .search-bar input,
@@ -125,7 +138,8 @@ th {
     text-align: center;
     font-weight: 600;
     font-size: 14px;
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
+    text-transform: none;
     letter-spacing: 0.5px;
 }
 
